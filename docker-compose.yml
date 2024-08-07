@@ -1,41 +1,36 @@
 
 services:
-  HSRTechapi: #Api
-    image: ${DOCKER_REGISTRY-}HSRTechapi
+  hsrtech_api: #Api
+    image: ${DOCKER_REGISTRY-}hsrtechapi
     build:
       context: .
-      dockerfile: src/HSRTech.Api/Dockerfile
+      dockerfile: src/hsrtech.Api/Dockerfile
     ports: 
      - "8081:8080"
 
     depends_on:
-     - postgres-ew
+     - sqlserver
 
     networks:
-     netHSRTech:
+     nethsrtech:
 
 #<postgres>
-  postgres-ew:
-    container_name: postgres-ew
-    image: postgres
+  sqlserver:
+    container_name: sqlserver
+    image: mcr.microsoft.com/mssql/server:2022-latest
     ports: 
-     - "5432:5432"
+     - "1433:1433"
     environment:
-     POSTGRES_PASSWORD: postgres
-     POSTGRES_USER: postgres
-     POSTGRES_DB: HSRTechdb
-     PGPORT: 5432
-    volumes:
-     #- pgdata-HSRTechdb:/var/lib/postgresql/data
-     - ./src/HSRTech.Infrastructure/ChangesDB/1.0.0/01_DDL.sql:/docker-entrypoint-initdb.d/01_DDL.sql
-     - ./src/HSRTech.Infrastructure/ChangesDB/1.0.0/02_DML.sql:/docker-entrypoint-initdb.d/02_DML.sql
+     ACCEPT_EULA: 'Y'
+     MSSQL_SA_PASSWORD: 'adminhA@123'
+     MSSQL_PID: 'Developer'    
     networks:
-     netHSRTech:
+     nethsrtech:
 #</postgres>
 
 #volumes:
-  #pgdata-HSRTechdb: {}
+  #pgdata-hsrtechdb: {}
 
 networks:
-  netHSRTech:
+  nethsrtech:
     
