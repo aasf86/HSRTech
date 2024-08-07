@@ -14,8 +14,8 @@ Solução para o desafio permitindo cadastrar projetos e tarefas.
 - 3º Demonstração via Swagger Open API
     ### Uma vez construido o ambiente, na maquina hospedeira é possivel acessar os servicos.
 
-    - Solução eclipseworks
-        - eclipseworks.Api: http://localhost:8081/swagger/index.html
+    - Solução HSRTech
+        - HSRTech.Api: http://localhost:8081/swagger/index.html
             - *Responsável pela gestão de casdastros de projetos e tarefas*    
 
     - Ferramentas de infraestrutura
