@@ -19,9 +19,10 @@ Solução para o desafio permitindo cadastrar projetos e tarefas.
             - *Responsável pela gestão de casdastros de projetos e tarefas*    
 
     - Ferramentas de infraestrutura
-        - SQL Server: port 1433
+        - SQL Server: port 1433 
             - *Banco de dados relacional responsável pela retenção dos dados.*
             - [Script definição de estrutura de dados (*01_DDL.sql*)](https://github.com/aasf86/HSRTech/blob/main/src/HSRTech.Infrastructure/ChangesDB/1.0.0/01_DDL.sql)
+            - Necessário executar os scripts abaixo:
             ```sql
             drop table if exists Livro;
             go
