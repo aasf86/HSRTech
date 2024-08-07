@@ -1,5 +1,5 @@
 # Solução para teste prático [HSRTech](https://hsrtech.com.br/)
-## Especificação de Desafio *[testepratico_csharp.pdf](https://github.com/aasf86/HSRTech/testepratico_csharp.pdf)*. 
+## Especificação de Desafio *[testepratico_csharp.pdf](https://github.com/aasf86/HSRTech/blob/main/testepratico_csharp.pdf)*. 
 Solução para o desafio permitindo cadastrar projetos e tarefas.
 
 - 1º Clonar codigo fonte
@@ -21,7 +21,7 @@ Solução para o desafio permitindo cadastrar projetos e tarefas.
     - Ferramentas de infraestrutura
         - SQL Server: port 1433
             - *Banco de dados relacional responsável pela retenção dos dados.*
-            - [Script definição de estrutura de dados (*01_DDL.sql*)](https://github.com/aasf86/HSRTech/blob/main/src/eclipseworks.Infrastructure/ChangesDB/1.0.0/01_DDL.sql)
+            - [Script definição de estrutura de dados (*01_DDL.sql*)](https://github.com/aasf86/HSRTech/blob/main/src/HSRTech.Infrastructure/ChangesDB/1.0.0/01_DDL.sql)
             ```sql
             drop table if exists Livro;
             go
