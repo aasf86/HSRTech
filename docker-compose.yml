@@ -1,0 +1,41 @@
+
+services:
+  HSRTechapi: #Api
+    image: ${DOCKER_REGISTRY-}HSRTechapi
+    build:
+      context: .
+      dockerfile: src/HSRTech.Api/Dockerfile
+    ports: 
+     - "8081:8080"
+
+    depends_on:
+     - postgres-ew
+
+    networks:
+     netHSRTech:
+
+#<postgres>
+  postgres-ew:
+    container_name: postgres-ew
+    image: postgres
+    ports: 
+     - "5432:5432"
+    environment:
+     POSTGRES_PASSWORD: postgres
+     POSTGRES_USER: postgres
+     POSTGRES_DB: HSRTechdb
+     PGPORT: 5432
+    volumes:
+     #- pgdata-HSRTechdb:/var/lib/postgresql/data
+     - ./src/HSRTech.Infrastructure/ChangesDB/1.0.0/01_DDL.sql:/docker-entrypoint-initdb.d/01_DDL.sql
+     - ./src/HSRTech.Infrastructure/ChangesDB/1.0.0/02_DML.sql:/docker-entrypoint-initdb.d/02_DML.sql
+    networks:
+     netHSRTech:
+#</postgres>
+
+#volumes:
+  #pgdata-HSRTechdb: {}
+
+networks:
+  netHSRTech:
+    

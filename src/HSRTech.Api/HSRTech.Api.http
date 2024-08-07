@@ -1,0 +1,6 @@
+@HSRTech.Api_HostAddress = http://localhost:5056
+
+GET {{HSRTech.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
