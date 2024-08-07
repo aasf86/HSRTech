@@ -1,8 +1,6 @@
 ﻿using HSRTech.Business.Contracts.UseCases.Livro;
-using HSRTech.Business.Contracts.UseCases.Tag;
 using HSRTech.Business.Dtos;
 using HSRTech.Business.Dtos.Livro;
-using HSRTech.Business.Dtos.Tag;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty taskes, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -118,14 +116,14 @@ namespace HSRTech.Api.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAll([FromQuery] int ano, int mes)
         {
-            var livroGetAll = new LivroGetAll { Ano = ano, Mes = mes };
+            var livroGetAll = new LivroGetFilter { Ano = ano, Mes = mes };
 
             var result = LivroUseCase.Validate(livroGetAll);
 
             if (result.IsSuccess)
             {
                 var LivroGetAllRequest = RequestBase.New(livroGetAll, "host:api", "1.0");
-                var livroGetResponse = await LivroUseCase.GetAll(LivroGetAllRequest);
+                var livroGetResponse = await LivroUseCase.GetListLivro(LivroGetAllRequest);
 
                 if (livroGetResponse.IsSuccess)
                     return Ok(livroGetResponse);

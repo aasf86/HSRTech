@@ -2,7 +2,7 @@
 
 namespace HSRTech.Business.Dtos.Livro
 {
-    public class LivroGetAll
+    public class LivroGetFilter
     {
         [Range(1, int.MaxValue)]
         [Required(ErrorMessage = "Informe o ano.")]

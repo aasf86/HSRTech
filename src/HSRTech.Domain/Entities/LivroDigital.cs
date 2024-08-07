@@ -17,5 +17,10 @@ namespace HSRTech.Domain.Entities
         public int Codigo { get; private set; }
         public string Formato { get; private set; }        
         public eLivroType TipoLivro { get; private set; }
+
+        public void SetCodigo(int codigo)
+        {
+            Codigo = codigo;
+        }
     }
 }

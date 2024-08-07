@@ -10,9 +10,6 @@ namespace HSRTech.Infrastructure.Repositories
         private IDbTransaction _dbTransaction;
         internal IDbTransaction DbTransaction => _dbTransaction;
         
-        private string? _SqlSelect;
-        private string SqlSelect => _SqlSelect = _SqlSelect ?? Helpers.StrSql.CreateSqlSelect<TEntity>();
-        
         public virtual void SetTransaction(IDbTransaction dbTransaction)
         {
             _dbTransaction = dbTransaction;
@@ -20,13 +17,12 @@ namespace HSRTech.Infrastructure.Repositories
 
         public virtual async Task<List<TEntity?>> GetAll(dynamic filter)
         {
-            //implementar filter, no futuro, pois até o momento não é necessário            
-            return (await DbTransaction.Connection.QueryAsync<TEntity?>(SqlSelect, new { filter })).ToList();
+            return await DbTransaction.GetAll<TEntity?>(filter as object);
         }
 
         public virtual async Task<TEntity?> GetByKey(long id)
         {            
-            return await DbTransaction.Connection.QuerySingleOrDefaultAsync<TEntity?>($"{SqlSelect}", new { id });
+            return await DbTransaction.GetByKey<TEntity?>(id);
         }
     }
 }

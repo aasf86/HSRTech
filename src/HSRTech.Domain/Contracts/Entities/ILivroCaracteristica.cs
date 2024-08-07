@@ -5,6 +5,6 @@ namespace HSRTech.Domain.Contracts.Entities
     public interface ILivroCaracteristica
     {
         int Codigo { get; }
-        eLivroType TipoLivro { get; }
+        void SetCodigo(int codigo);
     }
 }

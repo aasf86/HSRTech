@@ -1,7 +1,10 @@
 ﻿using HSRTech.Business.Contracts.UseCases.Livro;
 using HSRTech.Business.Dtos;
 using HSRTech.Business.Dtos.Livro;
+using HSRTech.Domain.Contracts.Entities;
 using HSRTech.Domain.Contracts.Repositories.Livro;
+using HSRTech.Domain.Contracts.Repositories.TipoEncadernacao;
+using HSRTech.Domain.Entities.ValueObjects;
 using HSRTech.Infrastructure.EntitiesModels;
 using Microsoft.Extensions.Logging;
 using System.Data;
@@ -13,14 +16,55 @@ namespace HSRTech.Business.UseCases.Livro
     {
         private readonly ILivroRepository<LivroModel> _livroRepository;
         private ILivroRepository<LivroModel> LivroRepository => _livroRepository;
+        private readonly ITipoEncadernacaoRepository<TipoEncadernacaoModel> _tipoEncadernacaoRepository;
+        private ITipoEncadernacaoRepository<TipoEncadernacaoModel> TipoEncadernacaoRepository => _tipoEncadernacaoRepository;
+
+        private readonly Dictionary<eLivroType, Func<LivroCaracteristicaInsert, int, ILivroCaracteristica>> _factoryLivroCaracteristicaInsert = new ()
+        {
+            {
+                eLivroType.Digital,
+                (LivroCaracteristicaInsert livro, int codigo) =>
+                {
+                    return new LivroDigitalModel(codigo, livro.Formato, eLivroType.Digital);
+                }
+            },
+            {
+                eLivroType.Impresso,
+                (LivroCaracteristicaInsert livro, int codigo) =>
+                {
+                    return new LivroImpressoModel(0, codigo, livro.Peso, livro.TipoEncadernacaoCodigo, eLivroType.Impresso);
+                }
+            }
+        };
+
+        private readonly Dictionary<eLivroType, Func<LivroCaracteristicaUpdate, int, ILivroCaracteristica>> _factoryLivroCaracteristicaUpdate = new ()
+        {
+            {
+                eLivroType.Digital,
+                (LivroCaracteristicaUpdate livro, int codigo) =>
+                {
+                    return new LivroDigitalModel(codigo, livro.Formato, eLivroType.Digital);
+                }
+            },
+            {
+                eLivroType.Impresso,
+                (LivroCaracteristicaUpdate livro, int codigo) =>
+                {
+                    return new LivroImpressoModel(0, codigo, livro.Peso, livro.TipoEncadernacaoCodigo, eLivroType.Impresso);
+                }
+            }
+        };
 
         public LivroUseCase(
             ILogger<LivroUseCase> logger,
             ILivroRepository<LivroModel> livroRepository,
+            ITipoEncadernacaoRepository<TipoEncadernacaoModel> tipoEncadernacaoRepository,
             IDbConnection dbConnection) : base(logger, dbConnection)
         {
             _livroRepository = livroRepository;
+            _tipoEncadernacaoRepository = tipoEncadernacaoRepository;
             TransactionAssigner.Add(LivroRepository.SetTransaction);
+            TransactionAssigner.Add(TipoEncadernacaoRepository.SetTransaction);
         }
 
         public async Task<ResponseBase<int>> Insert(RequestBase<LivroInsert> livroInsertRequest)
@@ -37,10 +81,26 @@ namespace HSRTech.Business.UseCases.Livro
                     return livroInsertResponse;
                 }
 
-                var livroEntity = new LivroModel(0, livroInsert.Titulo, livroInsert.Autor, livroInsert.Lancamento);
+                var livroEntity = new LivroModel(
+                    0, 
+                    livroInsert.Titulo, 
+                    livroInsert.Autor, 
+                    livroInsert.Lancamento,
+                    livroInsert
+                    .LivroCaracteristica
+                    .Select(item => _factoryLivroCaracteristicaInsert[item.TipoLivro](item, 0))
+                    .ToList());
 
                 await UnitOfWorkExecute(async () =>
                 {
+                    var existsTipoEncadernacao = await ExistsTipoEncadernacao(livroEntity.LivroCaracteristica);
+
+                    if(!existsTipoEncadernacao)
+                    {
+                        livroInsertResponse.Errors.Add(LivroMsgDialog.NotFoundTipoEncadernacao);
+                        return;
+                    }
+
                     await LivroRepository.Insert(livroEntity);
                     livroInsertResponse.Data = livroEntity.Codigo;
                 });
@@ -86,7 +146,30 @@ namespace HSRTech.Business.UseCases.Livro
                         Codigo = livroFromDb.Codigo,
                         Titulo = livroFromDb.Titulo,
                         Lancamento = livroFromDb.Lancamento,
-                        Autor = livroFromDb.Autor                        
+                        Autor = livroFromDb.Autor,
+                        LivroCaracteristica = livroFromDb
+                        .LivroCaracteristica
+                        .Select(x => 
+                        {
+                            if (x is LivroDigitalModel)
+                            {
+                                var itemDigital = x as LivroDigitalModel;
+                                return new LivroCaracteristicaGet
+                                { 
+                                    Formato = itemDigital.Formato,
+                                    TipoLivro = eLivroType.Digital
+                                };
+                            }
+
+                            var itemImpresso = x as LivroImpressoModel;
+
+                            return new LivroCaracteristicaGet
+                            {
+                                Peso = itemImpresso.Peso,
+                                TipoEncadernacaoCodigo = itemImpresso.TipoEncadernacaoCodigo
+                            };
+
+                        }).ToList()
                     };
                 });
 
@@ -131,7 +214,23 @@ namespace HSRTech.Business.UseCases.Livro
                         return;
                     }
 
-                    var newLivroUpdated = new LivroModel(livroUpdate.Codigo, livroUpdate.Titulo, livroUpdate.Autor, livroUpdate.Lancamento);
+                    var newLivroUpdated = new LivroModel(
+                        livroUpdate.Codigo, 
+                        livroUpdate.Titulo, 
+                        livroUpdate.Autor, 
+                        livroUpdate.Lancamento,
+                        livroUpdate
+                        .LivroCaracteristica
+                        .Select(item => _factoryLivroCaracteristicaUpdate[item.TipoLivro](item, livroUpdate.Codigo))
+                        .ToList());
+
+                    var existsTipoEncadernacao = await ExistsTipoEncadernacao(newLivroUpdated.LivroCaracteristica);
+
+                    if (!existsTipoEncadernacao)
+                    {
+                        livroUpdateResponse.Errors.Add(LivroMsgDialog.NotFoundTipoEncadernacao);
+                        return;
+                    }
 
                     var resultRunUpdate = await LivroRepository.Update(newLivroUpdated);
 
@@ -194,12 +293,12 @@ namespace HSRTech.Business.UseCases.Livro
             }
         }
 
-        public async Task<ResponseBase<List<LivroGet>>> GetAll(RequestBase<LivroGetAll> livroGetAllRequest)
+        public async Task<ResponseBase<List<LivroList>>> GetListLivro(RequestBase<LivroGetFilter> livroGetAllRequest)
         {
             try
             {
                 var livroFiltro = livroGetAllRequest.Data;
-                var livroGetAllResponse = ResponseBase.New(new List<LivroGet>(), livroGetAllRequest.RequestId);
+                var livroGetAllResponse = ResponseBase.New(new List<LivroList>(), livroGetAllRequest.RequestId);
 
                 var result = Validate(livroFiltro);
 
@@ -211,15 +310,9 @@ namespace HSRTech.Business.UseCases.Livro
 
                 await UnitOfWorkExecute(async () =>
                 {
-                    var livrosListFromDb = await LivroRepository.GetAll(livroFiltro);
+                    var livrosListFromDb = await LivroRepository.GetListLivro(livroFiltro);
 
-                    livroGetAllResponse.Data = livrosListFromDb.Select(x => new LivroGet
-                    {
-                        Codigo = x.Codigo,
-                        Titulo = x.Titulo,
-                        Lancamento = x.Lancamento,
-                        Autor = x.Autor
-                    }).ToList();
+                    livroGetAllResponse.Data = livrosListFromDb;
 
                 });
 
@@ -230,7 +323,7 @@ namespace HSRTech.Business.UseCases.Livro
                 "Erro no [GetAll] livro: {LivroFiltro}".LogErr(livroGetAllRequest.Data);
                 exc.Message.LogErr(exc);
 
-                var livroGetResponse = ResponseBase.New(new List<LivroGet>(), livroGetAllRequest.RequestId);
+                var livroGetResponse = ResponseBase.New(new List<LivroList>(), livroGetAllRequest.RequestId);
 #if DEBUG
                 livroGetResponse.Errors.Add(exc.Message);
 #endif
@@ -238,6 +331,23 @@ namespace HSRTech.Business.UseCases.Livro
 
                 return livroGetResponse;
             }
+        }
+
+        private async Task<bool> ExistsTipoEncadernacao(List<ILivroCaracteristica> livroCaracteristicas)
+        {
+            foreach (var item in livroCaracteristicas)
+            {
+                if (item is LivroImpressoModel)
+                {
+                    var livroImpressoModel = (LivroImpressoModel)item;
+                    var tipoEncadernacaoFromDb = await TipoEncadernacaoRepository.GetByKey(livroImpressoModel.TipoEncadernacaoCodigo);
+                    if (tipoEncadernacaoFromDb is null)
+                    {                        
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

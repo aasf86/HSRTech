@@ -3,7 +3,7 @@ using static HSRTech.Domain.Entities.LivroRules;
 
 namespace HSRTech.Business.Dtos.Livro
 {
-    public class LivroInsert
+    public class LivroInsert : IValidatableObject
     {
         [MinLength(LivroRule.TituloMinimalLenth, ErrorMessage = LivroMsgDialog.InvalidTitulo)]
         [Required(ErrorMessage = LivroMsgDialog.RequiredTitulo)]
@@ -17,5 +17,16 @@ namespace HSRTech.Business.Dtos.Livro
 
         [Required(ErrorMessage = LivroMsgDialog.RequiredLancamento)]
         public DateTime Lancamento { get; set; }
+        
+        public List<LivroCaracteristicaInsert> LivroCaracteristica { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (LivroCaracteristica is null || LivroCaracteristica.Count == 0)
+                yield return new ValidationResult(LivroMsgDialog.RequiredLivroCaracteristica, ["LivroCaracteristica"]);
+
+            if (LivroCaracteristica is not null && LivroCaracteristica.Count(x=>x.TipoLivro == eLivroType.Digital) > LivroRule.LivroDigitalMaxAumount)
+                yield return new ValidationResult(LivroMsgDialog.InvalidLivroDigiral, ["LivroCaracteristica"]);
+        }
     }
 }

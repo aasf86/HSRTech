@@ -9,6 +9,7 @@
             public const int TituloMaxLenth = 255;
             public const int AutorMinimalLenth = 3;
             public const int AutorMaxLenth = 255;
+            public const int LivroDigitalMaxAumount = 1;
         }
 
         public static class LivroMsgDialog
@@ -20,6 +21,9 @@
             public const string RequiredLancamento = "Informe a data de lançamento.";
             public const string InvalidCodigo = "Informe codigo do livro.";
             public const string NotFound = "Livro não encontrado.";
+            public const string RequiredLivroCaracteristica = "Informe a carateristica do livro.";
+            public const string NotFoundTipoEncadernacao = "Tipo de encadernação não encontrado.";
+            public const string InvalidLivroDigiral = "Só é permitido um livro digital.";
         }
 
         public enum eLivroType

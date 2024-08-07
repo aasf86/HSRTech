@@ -1,4 +1,5 @@
 ﻿using HSRTech.Domain.Entities;
+using HSRTech.Infrastructure.Repositories;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,7 +25,7 @@ namespace HSRTech.Infrastructure.EntitiesModels
         }
 
 
-        [Key]
+        [Key]        
         public new int Codigo { get; set; }
     }
 }
