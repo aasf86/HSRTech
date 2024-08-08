@@ -1,6 +1,6 @@
 # Solução para teste prático [HSRTech](https://hsrtech.com.br/)
 ## Especificação de Desafio *[testepratico_csharp.pdf](https://github.com/aasf86/HSRTech/blob/main/testepratico_csharp.pdf)*. 
-Solução para o desafio permitindo cadastrar projetos e tarefas.
+Solução para o desafio permitindo cadastrar livros, tags e tipos de encadernação.
 
 - 1º Clonar codigo fonte
 ```cmd
