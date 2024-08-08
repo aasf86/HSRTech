@@ -44,7 +44,7 @@ go
 
 create table LivroImpresso (
     Id int primary key identity,
-    Codigo int not null references Livro(Codigo)  on delete cascade,
+    Codigo int not null references Livro(Codigo) on delete cascade,
     Peso decimal(5, 2) not null,
     TipoEncadernacaoCodigo int not null references TipoEncadernacao(Codigo)    
 );
@@ -58,8 +58,8 @@ as
 select 
     l.Codigo,
     l.Lancamento,
-    format(l.Lancamento, 'yyyy') Ano,
-    format(l.Lancamento, 'MM') Mes,
+    cast(format(l.Lancamento, 'yyyy') as int) Ano,
+    cast(format(l.Lancamento, 'MM') as int) Mes,  
     l.Titulo,
     l.Autor,
     l.Lancamento DataLancamento,

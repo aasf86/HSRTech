@@ -16,7 +16,7 @@ Solução para o desafio permitindo cadastrar projetos e tarefas.
 
     - Solução HSRTech
         - HSRTech.Api: http://localhost:8081/swagger/index.html
-            - *Responsável pela gestão de casdastros de projetos e tarefas*    
+            - *Responsável pela gestão de casdastros de livros, tags e tipos de encadernação*    
 
     - Ferramentas de infraestrutura
         - SQL Server: port 1433 
