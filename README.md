@@ -70,7 +70,7 @@ Solução para o desafio permitindo cadastrar livros, tags e tipos de encaderna�
 
             create table LivroImpresso (
                 Id int primary key identity,
-                Codigo int not null references Livro(Codigo)  on delete cascade,
+                Codigo int not null references Livro(Codigo) on delete cascade,
                 Peso decimal(5, 2) not null,
                 TipoEncadernacaoCodigo int not null references TipoEncadernacao(Codigo)    
             );
